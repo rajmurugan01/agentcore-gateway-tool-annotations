@@ -1,0 +1,33 @@
+
+== A1. Can a Lambda target's tool definition carry annotations? ==
+[PASS] A1 the SDK's API model has no annotations field on a tool definition
+       Unknown parameter in targetConfiguration.mcp.lambda.toolSchema.inlinePayload[0]: "annotations", must be one of: name, description, inputSchema, outputSchema
+
+== A2. Plain gateway: tools/list ==
+       github___open_pr: annotations = (none)
+       github___read_file: annotations = (none)
+[PASS] A2 plain gateway lists both tools with no annotations
+
+== A3. Intercepted gateway: tools/list ==
+       github___open_pr: annotations = {'title': 'Open pull request', 'readOnlyHint': False, 'destructiveHint': False, 'idempotentHint': False, 'openWorldHint': True}
+       github___read_file: annotations = {'title': 'Read file', 'readOnlyHint': True, 'openWorldHint': False}
+[PASS] A3 read_file is readOnlyHint=true and open_pr is readOnlyHint=false, as the client sees them
+
+== A4. tools/call through the intercepted gateway ==
+[PASS] A4 read_file call works through the interceptor
+       {"jsonrpc": "2.0", "id": 1, "result": {"isError": false, "content": [{"type": "text", "text": "{\"path\":\"README.md\",\"content\":\"canned file content (mock)\"}"}]}}
+[PASS] A4 open_pr call works through the interceptor
+       {"jsonrpc": "2.0", "id": 1, "result": {"isError": false, "content": [{"type": "text", "text": "{\"pr\":\"https://example.invalid/pull/1\",\"title\":\"demo\"}"}]}}
+
+== A5. Failure mode (observed, not asserted): what does the client get when the interceptor fails? ==
+   interceptor MODE=raise
+     intercepted gateway, tools/list: HTTP 500 {"jsonrpc": "2.0", "id": 1, "result": {"content": [{"type": "text", "text": "An internal error occurred. Please retry later."}], "isError": true}}
+     intercepted gateway, tools/call read_file: HTTP 500 {"jsonrpc": "2.0", "id": 1, "result": {"content": [{"type": "text", "text": "An internal error occurred. Please retry later."}], "isError": true}}
+     plain gateway (control), tools/call read_file: HTTP 200 {"jsonrpc": "2.0", "id": 1, "result": {"isError": false, "content": [{"type": "text", "text": "{\"path\":\"REA...
+   interceptor MODE=garbage
+     intercepted gateway, tools/list: HTTP 500 {"jsonrpc": "2.0", "id": 1, "result": {"content": [{"type": "text", "text": "InterceptorException - Received invalid response from interceptor"}], "is...
+     intercepted gateway, tools/call read_file: HTTP 500 {"jsonrpc": "2.0", "id": 1, "result": {"content": [{"type": "text", "text": "InterceptorException - Received invalid response from interceptor"}], "is...
+     plain gateway (control), tools/call read_file: HTTP 200 {"jsonrpc": "2.0", "id": 1, "result": {"isError": false, "content": [{"type": "text", "text": "{\"path\":\"REA...
+[PASS] A5 restoring MODE=normal restores annotations
+
+6/6 asserted checks passed

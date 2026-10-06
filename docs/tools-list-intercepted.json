@@ -1,0 +1,52 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "tools": [
+      {
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "description": "pull request title",
+              "type": "string"
+            }
+          },
+          "required": [
+            "title"
+          ]
+        },
+        "name": "github___open_pr",
+        "description": "Open a pull request",
+        "annotations": {
+          "title": "Open pull request",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": true
+        }
+      },
+      {
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "description": "file path",
+              "type": "string"
+            }
+          },
+          "required": [
+            "path"
+          ]
+        },
+        "name": "github___read_file",
+        "description": "Read a file from a repository",
+        "annotations": {
+          "title": "Read file",
+          "readOnlyHint": true,
+          "openWorldHint": false
+        }
+      }
+    ]
+  }
+}
